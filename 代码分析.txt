@@ -1,0 +1,81 @@
+【登录部分】
+1.bean包中包含的是实体类：
+	Admin		管理员
+	Book		图书馆里面存储的数据类型
+	Constant
+	Lend		图书借阅里面存储的数据类型
+	User		用户管理里面存储的数据类型
+	
+2.在theme包下，运行App.java，会启动应用：
+
+-init()
+  init()方法下，有一个多次调用的load(String module, String name)方法，这里涉及到module包，该包里面有
+  多个子包，每个子包存放了对应的.fxml文件和.java文件。load的核心部分如下：
+	try {
+            ViewManager.getInstance().put(
+                    name,
+                    FXMLLoader.load(getClass().getResource("/com/bjpowernode/module/" + module + "/" + name + ".fxml"))
+            );
+            preloaderNotify();
+        }
+     这里的ViewManager创建了一个单例，然后调用put方法存入数据，实际上put方法第二个参数是加载了对应子包下的xxx.fxml文件
+     
+-start()
+	调用了initialScene()
+	initialScene(){
+	...
+	String log = logged();
+
+        //decorator.setContent(ViewManager.getInstance().get("login"));
+        if (log.equals("account") || log.equals("login")) {
+            decorator.setContent(ViewManager.getInstance().get(log));
+     ...
+	}
+	这一段ViewManager里面的一个HashMap对象会根据键值即log，返回对应的value，这里的log上
+	可为“login”或“account”
+	
+3.查看login.java和login.fxml
+  login.fxml:
+  	用户名位于一个TextField中，用id = "username"唯一标识该组件
+  	密码位于PasswordField中，用id="password"唯一标识该组件
+  	登录唯一Button中，用id="login"唯一标识该组件
+  	该文件和login.java关联，如登录按钮的onAction="#loginAction"对应login.java的loginAction方法
+  	
+ login.java:
+ 	-loginAction()
+ 	 输入信息，点击后用户登录后会触发该方法，里面调用了enter方法
+ 	 enter(){
+ 	   AdminService adminService = new AdminServiceImpl();
+        Admin admin = adminService.get(username.getText());
+
+        //检查是否输入了正确的用户名和密码
+        if(admin.getUserName().equals(this.username.getText()) 
+        && admin.getPassword().equals(this.password.getText())){...}
+        ...}
+        该方法通过输入的用户名先去查找本地存储的属性文件，即获取了真实的信息（用户名 + 密码），
+        然后下面在if语句中将真实信息和输入的信息进行比对，如果信息匹配，就登录成功。
+        
+【数据持久化】：
+原来：从user中的UserViewCtrl.java中可以看到，调用initialize()方法，其中展示的用户信息是使用
+一个ObservableList对象存储的，该类继承了List类。
+
+修改：在com.bjpowernode包下新建一个子包util，新建InitDataUtil.java文件。
+该主类实现将User数据的存储。
+	结构：
+		main(){initUser(...);}
+		initUser(List<User> userList)
+		{
+			1.创建存储的文件夹和文件，判断文件夹和文件是否存在
+			2.程序 - > 文件，创建一个文件输出处理流，用于将数据输出到文件
+			3.创建一个List<User> list 对象
+				如果userList为空，直接向list中添加一个默认的User对象
+				如果不为空，将userList赋值给list
+			4.将list中的内容通过输出流输出到文件中，完成数据保存
+		}	
+	注意点：
+		文件路径可设置为常量，方便在移植后修改 	
+	
+	
+     
+     
+     
