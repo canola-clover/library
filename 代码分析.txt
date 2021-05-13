@@ -74,6 +74,43 @@
 		}	
 	注意点：
 		文件路径可设置为常量，方便在移植后修改 	
+
+【代码分层】：
+controller（请求处理层）：负责与界面数据进行交互
+		此项目下主要是集中在model下的各个java文件
+
+service（业务逻辑层）：负责业务逻辑相关处理，此项目中的service子包
+
+DAO（Data Access Object）：负责数据持久化操作，自定义实现数据持久化
+调用关系：controller -> service -> DAO
+		
+【查询功能】
+dao层：
+ -在com.bjpowernode包下新建一个子包dao，新建UserDao接口
+  接口的抽象方法:List<User> select()
+ -在dao层下创建子包impl，创建UserDao的实现类UserDaoImpl实现抽象方法
+  select()
+  {
+  	创建一个ObjectInputSteam对象，并包装FileInputStream对象
+  	读取本地存储的数据文件
+  }
+  
+ service层：
+  -在service子包下新建接口UserService，抽象方法仍为List<User> select()
+  -在impl包下创建实现类UserServiceImpl，实现抽象方法
+   这里的select方法可以创建UserDao对象，然后直接调用该对象的select方法
+
+controller层：   
+user子包：
+ 用户管理展示相关连的java文件为UserViewCtrl，修改该类的initialize方法
+ 需要增加一个UserService类型的成员变量。
+ 在初始化方法中，调用该成员变量的select方法得到用户数据列表，
+ 然后将用户数据列表全部赋值给用于界面展示的列表对象
+ 
+ 注意点：由于User类实现了Serializable接口，当某天需要给该对象增加一些
+ 	   新的成员变量时，可能导致原来被序列化的数据不能正确读取。因此应该
+ 	   给User类增加一个序列化的ID，用于标志序列化版本
+ 	   private static final的serialVersionUID值
 	
 	
      
